@@ -2,17 +2,26 @@ package bankingapp.ui
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
+import bankingapp.securityutils.AntiScreenshot
+import bankingapp.securityutils.RootChecker
 import com.astroanastariq.bankingapp.R
 import com.astroanastariq.bankingapp.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
 
 
@@ -35,6 +44,17 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
+        AntiScreenshot.preventScreenshots(window)
+        lifecycleScope.launch {
+            val isRooted = withContext(Dispatchers.IO) {
+                RootChecker.isDeviceRooted()
+            }
+            if (isRooted) {
+                showCustomToast()
+                finish()
+            }
+        }
+
         appSettingPrefs = getSharedPreferences("AppSettingPrefs", 0)
         sharedPrefsEdit = appSettingPrefs.edit()
         isNightModeOn = appSettingPrefs.getBoolean("Night Mode", false)
@@ -45,6 +65,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showCustomToast() {
+        val inflater = LayoutInflater.from(this)
+        val layout = inflater.inflate(R.layout.toast_layout, null)
+        val toast = Toast(applicationContext)
+        toast.view = layout
+        toast.duration = Toast.LENGTH_LONG
+        toast.setGravity(Gravity.CENTER, 0, 0)
+        toast.show()
+    }
     //Up Button
     override fun onSupportNavigateUp() =
         findNavController(R.id.nav_host_fragment_content_main)

@@ -36,7 +36,8 @@ class CustomerFragment : Fragment() {
 
         viewModel.customerList.observe(viewLifecycleOwner) { customerList ->
             customerList.let {
-                adapter.submitList(customerList)
+                val obfuscatedCustomers = customerList.map { viewModel.obfuscateCustomer(it) }
+                adapter.submitList(obfuscatedCustomers)
             }
         }
 

@@ -1,4 +1,13 @@
 # PBL2-testapp
+# SDK Functionality Demo
+### **Anti Screenshot Functionality**
+
+### **Anti Screencast Functionality**
+
+### **Root Detection Functionality**
+
+### **Data Obfuscation Functionality**
+
 # AntiScreenshot
 
 A utility object for preventing screenshots in an Android app by setting the `FLAG_SECURE` flag on the window.

@@ -1,13 +1,13 @@
 # PBL2-testapp
 # SDK Functionality Demo
 ### **Anti Screenshot Functionality**
-
+![Anti Screenshot GIF](https://github.com/vk-56/PBL2-testapp/blob/main/Res/antiscdemo.gif)
 ### **Anti Screencast Functionality**
-
+![Anti Screencast GIF](https://github.com/vk-56/PBL2-testapp/blob/main/Res/anticapturedemo.gif)
 ### **Root Detection Functionality**
-
+![Root Detection GIF](https://github.com/vk-56/PBL2-testapp/blob/main/Res/rootdemo.gif)
 ### **Data Obfuscation Functionality**
-
+![Data Obfuscation GIF](https://github.com/vk-56/PBL2-testapp/blob/main/Res/obfuscatedemo.gif)
 # AntiScreenshot
 
 A utility object for preventing screenshots in an Android app by setting the `FLAG_SECURE` flag on the window.

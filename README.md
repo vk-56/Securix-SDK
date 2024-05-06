@@ -7,15 +7,15 @@ A utility object for preventing screenshots in an Android app by setting the `FL
 
 To prevent screenshots in your app, call the `preventScreenshots` function with a valid `Context`:
 
-`
+```
 AntiScreenshot.preventScreenshots(context)
-`
+```
 
 ## Example
 
 To prevent screenshots in your app, call the `preventScreenshots` function with a valid `Context`:
 
-`
+```
 // Call preventScreenshots in your Activity
 class MainActivity : AppCompatActivity() {
 override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,4 +25,4 @@ setContentView(R.layout.activity_main)
         AntiScreenshot.preventScreenshots(this)
     }
 }
-`
+```

@@ -8,7 +8,7 @@ import bankingapp.database.CustomerDao
 import bankingapp.securityutils.DataObfuscation
 import kotlinx.coroutines.launch
 
-class CustomerViewModel(private val datasource: CustomerDao):ViewModel() {
+class CustomerViewModel(private val datasource: CustomerDao): ViewModel() {
 
     lateinit var customerList: LiveData<List<Customer>>
 
@@ -18,19 +18,33 @@ class CustomerViewModel(private val datasource: CustomerDao):ViewModel() {
 
     private fun getCustomerList() {
         viewModelScope.launch {
-            customerList=datasource.getAllCustomer()
+            customerList = datasource.getAllCustomer()
         }
     }
 
     fun obfuscateCustomer(customer: Customer): Customer {
         val obfuscatedAccountNumber = DataObfuscation.obfuscateData(customer.customerAccountNumber)
-        return customer.copy(customerAccountNumber = obfuscatedAccountNumber)
+        val obfuscatedEmail = DataObfuscation.shuffleDatabaseRecords(listOf(customer.customerEmail)).first()
+        val obfuscatedMobileNumber = DataObfuscation.maskOutData(customer.customerMobileNumber, 3, 7)
+        val obfuscatedSwiftCode = DataObfuscation.randomCharacterObfuscate(customer.swiftCode)
+
+        return customer.copy(
+            customerAccountNumber = obfuscatedAccountNumber,
+            customerEmail = obfuscatedEmail,
+            customerMobileNumber = obfuscatedMobileNumber,
+            swiftCode = obfuscatedSwiftCode,
+        )
     }
+
 
     fun deobfuscateCustomer(customer: Customer): Customer {
         val deobfuscatedAccountNumber = DataObfuscation.deobfuscateData(customer.customerAccountNumber)
-        return customer.copy(customerAccountNumber = deobfuscatedAccountNumber)
+        val deobfuscatedEmail = DataObfuscation.shuffleDatabaseRecords(listOf(customer.customerEmail)).first()
+        val deobfuscatedMobileNumber = DataObfuscation.maskOutData(customer.customerMobileNumber, 3, 7)
+        return customer.copy(
+            customerAccountNumber = deobfuscatedAccountNumber,
+            customerEmail = deobfuscatedEmail,
+            customerMobileNumber = deobfuscatedMobileNumber
+        )
     }
-
-
 }

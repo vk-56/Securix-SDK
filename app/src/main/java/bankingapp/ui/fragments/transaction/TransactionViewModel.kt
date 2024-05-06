@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import bankingapp.database.Customer
 import bankingapp.database.CustomerDao
+import bankingapp.securityutils.DataObfuscation
 import kotlinx.coroutines.launch
 
 class TransactionViewModel(private var databaseSource: CustomerDao) : ViewModel() {
@@ -16,9 +17,21 @@ class TransactionViewModel(private var databaseSource: CustomerDao) : ViewModel(
     private var _updatedCustomerList = MutableLiveData<List<Customer>>()
     var updatedCustomerList: LiveData<List<Customer>> = _updatedCustomerList
 
-    fun showCustomerList(){
+    fun showCustomerList() {
         viewModelScope.launch {
-            _updatedCustomerList.value = databaseSource.getCustomExcept(requiredIdList)
+            val customers = databaseSource.getCustomExcept(requiredIdList)
+            _updatedCustomerList.value = obfuscateCustomers(customers)
+        }
+    }
+
+    private fun obfuscateCustomers(customers: List<Customer>): List<Customer> {
+        return customers.map { customer ->
+            customer.copy(
+                customerAccountNumber = DataObfuscation.obfuscateData(customer.customerAccountNumber),
+                customerEmail = DataObfuscation.shuffleDatabaseRecords(listOf(customer.customerEmail)).first(),
+                customerMobileNumber = DataObfuscation.maskOutData(customer.customerMobileNumber, 3, 7),
+                swiftCode = DataObfuscation.randomCharacterObfuscate(customer.swiftCode)
+            )
         }
     }
 

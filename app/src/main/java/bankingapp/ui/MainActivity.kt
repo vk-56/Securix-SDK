@@ -44,7 +44,8 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        AntiScreenshot.preventScreenshots(window)
+        AntiScreenshot.preventScreenshots(this)
+
         lifecycleScope.launch {
             val isRooted = withContext(Dispatchers.IO) {
                 RootChecker.isDeviceRooted()

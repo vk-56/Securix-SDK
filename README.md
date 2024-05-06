@@ -104,3 +104,47 @@ Masks out a portion of the data with a specified mask character.
 
 - **Returns**
     - A string with the specified portion of the data masked out.
+
+# RootChecker
+
+A utility object for checking if an Android device is rooted.
+
+## Functions
+
+### isDeviceRooted
+
+Checks if the device is rooted using multiple methods.
+
+- **Returns**
+    - `true` if the device is rooted, `false` otherwise.
+
+### checkRootMethod1
+
+Checks if the device is rooted using method 1, which looks for specific build tags associated with rooted devices.
+
+- **Returns**
+    - `true` if the device is rooted using method 1, `false` otherwise.
+
+### checkRootMethod2
+
+Checks if the device is rooted using method 2, which looks for common paths where root files are typically located.
+
+- **Returns**
+    - `true` if the device is rooted using method 2, `false` otherwise.
+
+### checkRootMethod3
+
+Checks if the device is rooted using method 3, which tries to execute the "which su" command to see if the su binary is present.
+
+- **Returns**
+    - `true` if the device is rooted using method 3, `false` otherwise.
+
+## Usage
+
+To check if the device is rooted, use the `isDeviceRooted` function in a coroutine:
+
+```kotlin
+viewModelScope.launch {
+    val isRooted = RootChecker.isDeviceRooted()
+    // Use isRooted value
+}

@@ -10,8 +10,28 @@ import java.security.NoSuchAlgorithmException
 object ApkSignatureVerifier {
 
     private const val TAG = "ApkSignatureVerifier"
+    private var expectedSignature: String? = null
 
-    fun isSignatureValid(context: Context, expectedSignature: String): Boolean {
+    // Method to generate and store the expected signature
+    fun generateExpectedSignature(context: Context) {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES)
+            val signatures = packageInfo.signatures
+
+            // Assuming you want the first signature
+            if (signatures.isNotEmpty()) {
+                expectedSignature = signatureToString(signatures[0])
+                Log.d(TAG, "Generated Expected Signature: $expectedSignature")  // Log the expected signature
+            } else {
+                Log.e(TAG, "No signatures found.")
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+    }
+
+    // Method to verify the current signature against the expected signature
+    fun isSignatureValid(context: Context): Boolean {
         Log.d(TAG, "Expected Signature: $expectedSignature")  // Log expected signature
 
         return try {
@@ -19,8 +39,9 @@ object ApkSignatureVerifier {
             val signatures = packageInfo.signatures
             for (signature in signatures) {
                 val signatureString = signatureToString(signature)
-                Log.d(TAG, "Signature String: $signatureString")  // Log the actual signature string
+                Log.d(TAG, "Current Signature String: $signatureString")  // Log the actual signature string
 
+                // Compare with the expected signature
                 if (signatureString == expectedSignature) {
                     return true
                 }

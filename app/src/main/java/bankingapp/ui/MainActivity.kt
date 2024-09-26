@@ -57,8 +57,11 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
-        // Check APK signature
-        val isSignatureValid = ApkSignatureVerifier.isSignatureValid(this, expectedSignature)
+        // Generate expected signature
+        ApkSignatureVerifier.generateExpectedSignature(this)
+
+        // Verify the signature
+        val isSignatureValid = ApkSignatureVerifier.isSignatureValid(this)
         if (!isSignatureValid) {
             showCustomToast("Invalid APK signature!")
             finish()

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -16,6 +17,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import bankingapp.securityutils.AntiScreenshot
+import bankingapp.securityutils.ApkSignatureVerifier
 import bankingapp.securityutils.RootChecker
 import com.astroanastariq.bankingapp.R
 import com.astroanastariq.bankingapp.databinding.ActivityMainBinding
@@ -29,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appSettingPrefs : SharedPreferences
     private lateinit var sharedPrefsEdit : SharedPreferences.Editor
     private var isNightModeOn by Delegates.notNull<Boolean>()
-
+    private val expectedSignature = "5ad4c6a33a4337e7b010a9fbc9dfe1051fdde035" // SHA-1 Signature Generated through keytool
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -55,6 +57,15 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
+        // Check APK signature
+        val isSignatureValid = ApkSignatureVerifier.isSignatureValid(this, expectedSignature)
+        if (!isSignatureValid) {
+            showCustomToast("Invalid APK signature!")
+            finish()
+        }
+        else {
+            showCustomToast("Valid APK signature!")
+        }
 
         appSettingPrefs = getSharedPreferences("AppSettingPrefs", 0)
         sharedPrefsEdit = appSettingPrefs.edit()
@@ -66,15 +77,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showCustomToast() {
+    private fun showCustomToast(message: String = "Default message from the app") {
         val inflater = LayoutInflater.from(this)
         val layout = inflater.inflate(R.layout.toast_layout, null)
+
+        // Assuming there is a TextView in your custom layout to show the message
+        val textView = layout.findViewById<TextView>(R.id.toastTextView)
+        textView.text = message
+
         val toast = Toast(applicationContext)
         toast.view = layout
         toast.duration = Toast.LENGTH_LONG
         toast.setGravity(Gravity.CENTER, 0, 0)
         toast.show()
     }
+
     //Up Button
     override fun onSupportNavigateUp() =
         findNavController(R.id.nav_host_fragment_content_main)

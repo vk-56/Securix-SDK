@@ -1,7 +1,9 @@
 package bankingapp.ui
 
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Menu
@@ -9,6 +11,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
@@ -32,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPrefsEdit : SharedPreferences.Editor
     private var isNightModeOn by Delegates.notNull<Boolean>()
     private val expectedSignature = "5ad4c6a33a4337e7b010a9fbc9dfe1051fdde035" // SHA-1 Signature Generated through keytool
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -58,16 +62,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
         // Generate expected signature
-        ApkSignatureVerifier.generateExpectedSignature(this)
 
-        // Verify the signature
-        val isSignatureValid = ApkSignatureVerifier.isSignatureValid(this)
-        if (!isSignatureValid) {
-            showCustomToast("Invalid APK signature!")
-            finish()
-        }
-        else {
-            showCustomToast("Valid APK signature!")
+        // Certificate verification
+        val expectedHash = "56d2fc2ba60fbd5949e66d1c4a97dfaa35d4ca8c3116bf26eb70149830cfc290"
+        val isValid = ApkSignatureVerifier.isCertificateValid(this, expectedHash, "SHA-256")
+        if (isValid) {
+            Log.d("Verification", "Certificate is valid.")
+        } else {
+            Log.d("Verification", "Certificate verification failed.")
         }
 
         appSettingPrefs = getSharedPreferences("AppSettingPrefs", 0)

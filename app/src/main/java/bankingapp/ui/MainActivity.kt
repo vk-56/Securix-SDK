@@ -1,8 +1,10 @@
 package bankingapp.ui
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -14,6 +16,9 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -35,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPrefsEdit : SharedPreferences.Editor
     private var isNightModeOn by Delegates.notNull<Boolean>()
     private val expectedSignature = "5ad4c6a33a4337e7b010a9fbc9dfe1051fdde035" // SHA-1 Signature Generated through keytool
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: BiometricPrompt.PromptInfo
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +68,14 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
-        // Generate expected signature
+        setupBiometricPrompt()
+
+        // Check if biometrics are available and enrolled
+        if (isBiometricAvailable()) {
+            authenticateUser()
+        } else {
+            promptUserToSetUpBiometrics()
+        }
 
         // Certificate verification
         val expectedHash = "56d2fc2ba60fbd5949e66d1c4a97dfaa35d4ca8c3116bf26eb70149830cfc290"
@@ -81,6 +95,66 @@ class MainActivity : AppCompatActivity() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
     }
+
+    private fun setupBiometricPrompt() {
+        val executor = ContextCompat.getMainExecutor(this)
+
+        biometricPrompt = BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                Log.d("BiometricAuth", "Authentication succeeded!")
+                // Proceed with authenticated actions
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                Log.d("BiometricAuth", "Authentication error: $errString")
+            }
+
+            override fun onAuthenticationFailed() {
+                super.onAuthenticationFailed()
+                Log.d("BiometricAuth", "Authentication failed. Try again.")
+            }
+        })
+
+        promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Biometric Authentication")
+            .setSubtitle("Authenticate with your biometrics")
+            .setDescription("Use face, fingerprint, or iris to authenticate.")
+            .setNegativeButtonText("Cancel")
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG) // Allows face, fingerprint, iris, etc.
+            .build()
+    }
+
+    private fun authenticateUser() {
+        biometricPrompt.authenticate(promptInfo)
+    }
+
+    private fun isBiometricAvailable(): Boolean {
+        val biometricManager = BiometricManager.from(this)
+        return when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> true
+            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
+                Log.d("BiometricAuth", "No biometric hardware available.")
+                false
+            }
+            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
+                Log.d("BiometricAuth", "Biometric hardware currently unavailable.")
+                false
+            }
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
+                Log.d("BiometricAuth", "No biometrics enrolled.")
+                false
+            }
+            else -> false
+        }
+    }
+
+    private fun promptUserToSetUpBiometrics() {
+        val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
+        startActivity(intent)
+    }
+
 
     private fun showCustomToast(message: String = "Default message from the app") {
         val inflater = LayoutInflater.from(this)
